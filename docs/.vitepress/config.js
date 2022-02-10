@@ -5,14 +5,14 @@ module.exports = {
   description: 'vitepress站点总结知识',
   theme: '@vuepress/theme-default',
   themeConfig: {
-    logo: '/static/img/logo.png',
+    logo: '/images/logo.png',
     nav: [
       { text: '首页', link: '/' },
       { text: '构建', link: '/build/' },
       { text: 'vue', link: '/vue/' },
     ],
   },
-  head: [['link', { rel: 'icon', href: '/static/img/logo.png' }]],
+  head: [['link', { rel: 'icon', href: '/images/logo.png' }]],
   markdown: {
     lineNumbers: true,
   },
