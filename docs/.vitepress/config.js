@@ -3,7 +3,6 @@ module.exports = {
   lang: 'zh-CN',
   title: '知识总结',
   description: 'vitepress站点总结知识',
-  // 主题和它的配置
   theme: '@vuepress/theme-default',
   themeConfig: {
     logo: '/static/img/logo.png',
