@@ -6,13 +6,14 @@ module.exports = {
   // 主题和它的配置
   theme: '@vuepress/theme-default',
   themeConfig: {
-    logo: 'https://vuejs.org/images/logo.png',
+    logo: '/static/img/logo.png',
     nav: [
       { text: '首页', link: '/' },
       { text: '构建', link: '/build/' },
       { text: 'vue', link: '/vue/' },
     ],
   },
+  head: [['link', { rel: 'icon', href: '/static/img/logo.png' }]],
   markdown: {
     lineNumbers: true,
   },
