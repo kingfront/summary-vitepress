@@ -3,7 +3,7 @@ module.exports = {
   lang: 'zh-CN',
   title: '知识总结',
   description: 'vitepress站点总结知识',
-  theme: '@vuepress/theme-default',
+  theme: '@vitepress/theme-default',
   themeConfig: {
     logo: '/images/logo.png',
     nav: [
