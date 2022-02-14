@@ -1,12 +1,10 @@
-# 构建工具
-
-## 简介
+## 构建工具
 
 在浏览器支持 ES 模块之前，JavaScript 并没有提供的原生机制让开发者以模块化的方式进行开发。这也正是我们对 “打包” 这个概念熟悉的原因：使用工具抓取、处理并将我们的源码模块串联成可以在浏览器中运行的文件
 
-## 常用的构建工具
-
+::: tip 常用的构建工具
 webpack、Snowpack、vite、Rollup 、grunt、gulp
+:::
 
 ### webpack
 
@@ -60,3 +58,96 @@ module.exports = {
 ```
 
 4. 插件(plugin)
+
+loader 被用于转换某些类型的模块，而插件则可以用于执行范围更广的任务。插件的范围包括，从打包优化和压缩，一直到重新定义环境中的变量。插件接口功能极其强大，可以用来处理各种各样的任务。
+
+想要使用一个插件，你只需要 require() 它，然后把它添加到 plugins 数组中。多数插件可以通过选项(option)自定义。你也可以在一个配置文件中因为不同目的而多次使用同一个插件，这时需要通过使用 new 操作符来创建它的一个实例。
+
+```js
+const HtmlWebpackPlugin = require('html-webpack-plugin') // 通过 npm 安装
+const webpack = require('webpack') // 用于访问内置插件
+
+const config = {
+  module: {
+    rules: [{ test: /\.txt$/, use: 'raw-loader' }],
+  },
+  plugins: [new HtmlWebpackPlugin({ template: './src/index.html' })],
+}
+
+module.exports = config
+```
+
+5. 模式
+
+通过选择 development 或 production 之中的一个，来设置 mode 参数，你可以启用相应模式下的 webpack 内置的优化
+
+```js
+module.exports = {
+  mode: 'production',
+}
+```
+
+6. 模块 (modules)
+
+- 对比 Node.js 模块，webpack 模块能够以各种方式表达它们的依赖关系，几个例子如下：
+- ES2015 import 语句
+- CommonJS require() 语句
+- AMD define 和 require 语句
+- css/sass/less 文件中的 @import 语句。
+- 样式(url(...))或 HTML 文件(< img src=... >)中的图片链接(image url)
+
+#### 面试题
+
+1. 前端为什么要进行打包和构建？
+
+代码层面：
+
+- 体积更小（Tree-shaking、压缩、合并），加载更快
+- 编译高级语言和语法（TS、ES6、模块化、scss）
+- 兼容性和错误检查（polyfill,postcss,eslint）
+
+研发流程层面：
+
+- 统一、高效的开发环境
+- 统一的构建流程和产出标准
+- 集成公司构建规范（提测、上线）
+
+2. loader 和 plugin 的区别
+
+- loader 模块转换器 （less->css）
+- plugin 是扩展插件，如 HtmlWebpackPlugin
+
+3. babel-polyfill babel-runtime 区别
+
+- babel-polyfill 会污染全局
+- babel-runtime 不会污染全局，产出第三方 lib 时要用 babel-runtime
+
+4. webpack 优化构建速度
+
+生产环境：
+
+- babel-loader
+- IgnorePlugin
+- noParse
+- happyPack
+- ParallelUglifyPlugin
+
+不能用于生产环境：
+
+- 自动刷新
+- 热更新
+- DllPlugin
+
+5. webpack 优化产出代码
+
+- 小图片 base64 编码
+- bundle 加 hash
+- 懒加载
+- 提取公共代码
+- 使用 cdn 加速
+- IgnorePlugin
+- 使用 production
+- Scope Hosting
+- (场景、效果、原理)
+
+6. webpack 打包原理和流程

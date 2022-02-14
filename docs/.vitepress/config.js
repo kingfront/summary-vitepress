@@ -8,6 +8,7 @@ module.exports = {
     logo: '/images/logo.png',
     nav: [
       { text: '首页', link: '/' },
+      { text: 'PDF知识点', link: '/docs/2022.pdf' },
       { text: '构建', link: '/build/' },
       { text: 'vue', link: '/vue/' },
     ],
