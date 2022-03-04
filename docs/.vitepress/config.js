@@ -8,7 +8,7 @@ module.exports = {
     logo: '/images/logo.png',
     nav: [
       { text: '首页', link: '/' },
-      { text: 'node', link: '/node/' },
+      { text: '概念', link: '/node/' },
       { text: '构建', link: '/build/' },
       { text: 'PDF知识点', link: '/docs/2022.pdf' },
     ],

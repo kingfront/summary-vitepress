@@ -3,7 +3,7 @@
 在浏览器支持 ES 模块之前，JavaScript 并没有提供的原生机制让开发者以模块化的方式进行开发。这也正是我们对 “打包” 这个概念熟悉的原因：使用工具抓取、处理并将我们的源码模块串联成可以在浏览器中运行的文件
 
 ::: tip 常用的构建工具
-webpack、Snowpack、vite、Rollup 、grunt、gulp
+Webpack、Vite、Rollup、Esbuild、Gulp
 :::
 
 ### webpack
@@ -247,4 +247,101 @@ webpack 是当下最热门的前端资源模块化管理和打包工具，成为
 Webpack 更侧重于模块打包
 :::
 
-### vite
+### [vite](https://vitejs.cn/guide/why.html#the-problems)
+
+当项目逐渐变大时，使用 webpack 等工具打包太慢了，即使使用 HMR，文件修改后的效果也需要几秒钟才能在浏览器中反映出来。极大地影响开发者的开发效率和幸福感。
+
+Vite 以 原生 ESM 方式提供源码。这实际上是让浏览器接管了打包程序的部分工作，Vite 只需要在浏览器请求源码时进行转换并按需提供源码
+
+| 环境     | 构建依赖 | 构建方式                                     | 源码类型 |
+| -------- | -------- | -------------------------------------------- | -------- |
+| 开发环境 | Esbuild  | 启动时提前构建依赖包、HMR 热更新指定页面源码 | ESM      |
+| 生产环境 | Rollup   | 构建打包依赖、源码                           | ESM      |
+
+::: tip Esbuild 和 Rollup
+Esbuild 使用 Go 编写，构建依赖非常的快，但一些针对构建 应用 的重要功能仍然还在持续开发中 —— 特别是代码分割和 CSS 处理方面，Rollup 在应用打包方面更加成熟和灵活，所以生产环境暂时先使用 Rollup。
+:::
+
+Vite 通过在一开始将应用中的模块区分为 依赖 和 源码 两类，改进了开发服务器启动时间。
+
+- 依赖：在服务器启动时，把第三方依赖的包或者不常变动的包，通过 esbuild 预构建依赖 进行提前打包
+- 源码：例如 JSX，CSS 或者 Vue/Svelte 组件，时常会被编辑。同时，并不是所有的源码都需要同时被加载（例如基于路由拆分的代码模块）
+
+![流程图](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/aa4444159ea14eb583dc787d5f399b56~tplv-k3u1fbpfcp-watermark.awebp?)
+
+更详细参考：https://juejin.cn/post/7064853960636989454
+
+### Esbuild
+
+Esbuild 为什么那么快？
+
+- 它是用 Go 语言编写的，该语言可以编译为原生代码；
+- 解析，打印和源映射生成全部完全并行化；
+- 无需昂贵的数据转换，只需很少的几步即可完成所有操作；
+- 编写代码时处处注意速度表现，并尽量避免不必要的配置。
+
+支持：
+
+- commonJS 模块
+- ES6 模块
+- 使用’–bundle’与 ES6 模块的静态绑定打包
+- 使用’–minify’完全压缩（空格、标识符和修饰符）
+- 启用’–sourcemap’时，完全支持源映射
+- .jsx 文件的 JSX 到 JavaScript 转换
+- 通过’–define’进行编译时标识符替换
+- 使用 package.json 中的’browser’字段进行路径替换
+- 自动检测 tsconfig.json 中的’baseUrl’
+
+### Rollup
+
+Rollup 优势：
+
+- 输出结果更加扁平，执行效率自然更高
+- 自动移除未引用代码
+- 打包结果依然完全可读
+
+Rollup 缺陷：
+
+- 加载非 ESM 的第三方模块比较复杂
+- 模块最终打包到一个函数中，无法实现 HMR
+- 浏览器环境中，代码拆分依赖 amd
+
+Webpack 大而全，Rollup 小而美
+所以，vue 目前在开发环境下使用 Esbuild，生产环境打包使用 Rollup
+
+### package.json
+
+package.json 文件就是一个 JSON 对象，该对象的每一个成员就是当前项目的一项设置
+依赖版本号
+
+1. 版本号说明：
+
+- 指定版本：比如 1.2.2，遵循“大版本.次要版本.小版本”的格式规定，安装时只安装指定版本。
+- 波浪号 ：比如~1.2.2，表示安装 1.2.x 的最新版本，不低于 1.2.2，但是不安装 1.3.x
+- 插入号 ：比如 ˆ1.2.2，表示安装 1.x.x 的最新版本，不低于 1.2.2，但是不安装 2.x.x，需要注意的是，如果大版本号为 0，则插入号的行为与波浪号相同
+
+2. 文件属性说明：
+
+- latest ：安装最新版本
+- name：项目/模块名称，长度必须小于等于 214 个字符，不能以"."(点)或者"\_"(下划线)开头，不能包含大写- 字母。
+- version：项目版本。
+- author：项目开发者，它的值是你在https://npmjs.org网站的有效账户名，遵循“账户名<邮件>”的规则，- 例如：zhangsan zhangsan@163.com。
+- description：项目描述，是一个字符串。它可以帮助人们在使用 npm search 时找到这个包。
+- keywords：项目关键字，是一个字符串数组。它可以帮助人们在使用 npm search 时找到这个包。
+- private：是否私有，设置为 true 时，npm 拒绝发布。
+- license：软件授权条款，让用户知道他们的使用权利和限制。
+- bugs：bug 提交地址。
+- contributors：项目贡献者 。
+- repository：项目仓库地址。
+- homepage：项目包的官网 URL。
+- dependencies：生产环境下，项目运行所需依赖。
+- devDependencies：开发环境下，项目所需依赖。
+- scripts：执行 npm 脚本命令简写，比如 “start”: “react-scripts start”, 执行 npm start 就- 是运行 “react-scripts start”。
+- bin：内部命令对应的可执行文件的路径。
+- main：项目默认执行文件，比如 require(‘webpack’)；就会默认加载 lib 目录下的 webpack.js 文- 件，如果没有设置，则默认加载项目跟目录下的 index.js 文件。
+- module：是以 ES Module(也就是 ES6)模块化方式进行加载，因为早期没有 ES6 模块化方案时，都是遵- 循 CommonJS 规范，而 CommonJS 规范的包是以 main 的方式表示入口文件的，为了区分就新增了 - module 方式，但是 ES6 模块化方案效率更高，所以会优先查看是否有 module 字段，没有才使用 main - 字段。
+- eslintConfig：EsLint 检查文件配置，自动读取验证。
+- engines：项目运行的平台。
+- browserslist：供浏览器使用的版本列表。
+- style：供浏览器使用时，样式文件所在的位置；样式文件打包工具 parcelify，通过它知道样式文件的打包- 位置。
+- files：被项目包含的文件名数组
