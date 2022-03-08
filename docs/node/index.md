@@ -90,78 +90,34 @@ getData('/login', function (res) {
    被观察者管理内部 pending、fulfilled 和 rejected 的状态转变，同时通过构造函数中传递的 resolve 和 reject 方法以主动触发状态转变和通知观察者。
 
 ```js
-function getUserId() {
-  return new Promise(function (resolve) {
-    http.get(url, function (results) {
-      resolve(results.id)
+// 简易Promise
+function Promise(fn) {
+  var value = null,
+    callbacks = [] //callbacks为数组，因为可能同时有很多个回调
+  this.then = function (onFulfilled) {
+    callbacks.push(onFulfilled)
+  }
+  function resolve(value) {
+    callbacks.forEach(function (callback) {
+      callback(value)
     })
-  })
+  }
+  fn(resolve)
 }
 
-getUserId().then(function (id) {
+// 实际使用
+new Promise(function (resolve) {
+  http.get(url, function (results) {
+    resolve(results.id)
+  })
+}).then(function (id) {
   //一些处理
 })
 ```
 
-```js
-// 自己实现的promise
-function Promise(fn) {
-  var state = 'pending',
-    value = null,
-    callbacks = []
-  this.then = function (onFulfilled, onRejected) {
-    return new Promise(function (resolve, reject) {
-      handle({
-        onFulfilled: onFulfilled || null,
-        onRejected: onRejected || null,
-        resolve: resolve,
-        reject: reject,
-      })
-    })
-  }
-  function handle(callback) {
-    if (state === 'pending') {
-      callbacks.push(callback)
-      return
-    }
-    var cb = state === 'fulfilled' ? callback.onFulfilled : callback.onRejected,
-      ret
-    if (cb === null) {
-      cb = state === 'fulfilled' ? callback.resolve : callback.reject
-      cb(value)
-      return
-    }
-    ret = cb(value)
-    callback.resolve(ret)
-  }
-  function resolve(newValue) {
-    if (
-      newValue &&
-      (typeof newValue === 'object' || typeof newValue === 'function')
-    ) {
-      var then = newValue.then
-      if (typeof then === 'function') {
-        then.call(newValue, resolve, reject)
-        return
-      }
-    }
-    state = 'fulfilled'
-    value = newValue
-    execute()
-  }
-  function reject(reason) {
-    state = 'rejected'
-    value = reason
-    execute()
-  }
-  function execute() {
-    setTimeout(function () {
-      callbacks.forEach(function (callback) {
-        handle(callback)
-      })
-    }, 0)
-  }
+逻辑步骤：
 
-  fn(resolve, reject)
-}
-```
+1. 创建 Promise 实例时，携带函数、并携带参数 resolve，然后函数会立即执行，执行完毕后会调用 resolve 函数，执行 callbacks 函数队列，从而实现同步回参
+2. 调用 then 方法，将想要在 Promise 异步操作成功时执行的回调放入 callbacks 队列，其实也就是注册回调函数，可以向观察者模式方向思考。
+
+注：如果在 then 方法注册回调之前，resolve 函数就执行了，此种情况还未考虑
