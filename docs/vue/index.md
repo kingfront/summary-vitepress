@@ -1,11 +1,75 @@
 ## vue
 
+![RUNOOB 图标](https://v3.cn.vuejs.org/images/lifecycle.svg)
+
+### vue3 设计与实现
+
+Tree-shaking
+消除那些永远不被执行的代码，可添加注释，表明代码不被执行
+
+1. 编译器
+
+- 把 vue 文件模板，编译为渲染函数
+- 提取静态属性到前面,并设置 patchFlags 为-1
+
+编译器前
+
+```vue
+<template>
+  <div>你好</div>
+</template>
+<script>
+export default {}
+</script>
+```
+
+编译器后
+
+```js
+export default {
+  render() {
+    h('div', '你好')
+  },
+}
+```
+
+2. 渲染器
+
+- 把虚拟 DOM 渲染为真实 DOM
+- 通过 DIFF 算法，找出最小变更点
+- h 函数是转换为虚拟 DOM 的一个辅助函数
+
+3. 响应式
+
+通过 ES6 新语法 proxy，监听对象的 get、set，从而执行副作用函数
+
 ### vue3.x 的变化
 
 1. 事件缓存：将事件缓存，可以理解为变成静态的了
 2. 添加静态标记：Vue2 是全量 Diff，Vue3 是静态标记 + 非全量 Diff
 3. 静态提升：创建静态节点时保存，后续直接复用
-4. 使用最长递增子序列优化了对比流程：Vue2 里在 updateChildren() 函数里对比变更，在 Vue3 里这一块的逻辑主要在 patchKeyedChildren() 函数里，具体看下面
+4. 使用最长递增子序列优化了对比流程：Vue2 里在 updateChildren() 函数里对比变更，
+   在 Vue3 里这一块的逻辑主要在 patchKeyedChildren() 函数里，具体看下面
+   在 Vue3 里 patchKeyedChildren 为
+     - 头和头比
+     - 尾和尾比
+     - 基于最长递增子序列进行移动/添加/删除
+
+   看个例子，比如
+
+   老的 children：[ a, b, c, d, e, f, g ]
+   新的 children：[ a, b, f, c, d, e, h, g ]
+   先进行头和头比，发现不同就结束循环，得到 [ a, b ]
+   再进行尾和尾比，发现不同就结束循环，得到 [ g ]
+   再保存没有比较过的节点 [ f, c, d, e, h ]，并通过 newIndexToOldIndexMap 拿到在数组里对应的下标，生成数组 [ 5, 2, 3, 4, -1 ]，-1 是老数组里没有的就说明是新增
+   然后再拿取出数组里的最长递增子序列，也就是 [ 2, 3, 4 ] 对应的节点 [ c, d, e ]
+   然后只需要把其他剩余的节点，基于 [ c, d, e ] 的位置进行移动/新增/删除就可以了
+   使用最长递增子序列可以最大程度的减少 DOM 的移动，达到最少的 DOM 操作，有兴趣的话去 leet-code 第300题(最长递增子序列) 体验下
+
+### vue3.x 源码分析
+
+1. 返回 app 实例，支持链式调用
+   const app = Vue.createApp({});
 
 ### diff 算法
 
